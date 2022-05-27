@@ -1,0 +1,34 @@
+main:
+    steps:
+    # We're defining our 'methods', or tasks if you're familiar with Airflow.
+    # Basicly each '-' in this identation is a task
+    - define:
+        assign:
+            - i: 0
+    - getClientes:
+    # We're defining what kind of call we're doing and those are simply the http vers we're familiar with.
+        call: http.get
+        args:
+            # You can create your own mockapi here: https://mockapi.io/
+            url: https://6290ea5a27f4ba1c65c4a28d.mockapi.io/api/v1/client
+        # With the line below you're assigning the http response to a var that can be fetched later on(similar to Xcom?)
+        # It's very import and you'll seeing a lot!
+        result: clients
+    - processClientes:
+        # We're establishing a loop.
+        # In python it'd look like this: 
+        #>> for row in clientes.body:
+        #>>  {your_code}
+        for:
+            # Because we're working with rest, our data really reside within "body". (clients.body)
+            # As we're doing a 'get all', it's expected to always return a list-like inside a body eg:
+            # [{"createdAt": "2022-05","name": "Sonja Toy","age": 6,"id": "1"},{"createdAt": "2022-05",name": "Shelia Dibbert",age": 6, id": "2"}]
+            value: row
+            in: ${clients.body}
+            steps:
+            # Down below we're just printing our results to a log so we can debug/watch our working Workflow,
+            # but you are not limited to that.b
+                - processRow:
+                    call: sys.log
+                    args:
+                        data: ${row}
